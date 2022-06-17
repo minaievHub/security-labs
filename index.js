@@ -1,30 +1,16 @@
-const { join } = require('path');
-
-const { decode, users } = require('./src/secure');
-const { initDisk } = require('./src/fileSystem');
-const { callCliLine, waitForPassword } = require('./src/cli');
-const { StateManager } = require('./src/stateManager');
-const { log, logError } = require('./src/logger');
-
-const DISK_NAME = 'Disk:A';
+const { decode } = require('./src/secure/secure');
+const { initDisk } = require('./src/init/init');
+const { cliLine } = require('./src/cli/cli');
+const { verifyUserWithRules } = require('./src/secure/access');
+const { logColored } = require('./src/logger');
 
 (async () => {
   try {
-    const diskPath = join(__dirname, '.', DISK_NAME);
-    initDisk(diskPath);
-
-    const enteredPassword = await waitForPassword();
-    const user = users[enteredPassword];
-    if (!user) {
-      log('Incorrect password');
-      process.exit();
-    }
-
-    log(`Hello, ${user}`);
-    const disk = decode(diskPath);
-    const state = new StateManager({ user, currentDir: '/', disk });
-    await callCliLine(state);
-  } catch (err) {
-    logError(err);
+    initDisk();
+    const disk = decode();
+    const userData = await verifyUserWithRules(disk);
+    await cliLine({ user: userData.login, currentDir: '/', disk });
+  } catch (e) {
+    logColored(e.message, '\x1b[31m%s\x1b[0m');
   }
 })();
