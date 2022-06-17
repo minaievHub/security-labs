@@ -1,21 +1,13 @@
-const { generatePrimeNumber } = require('./src/bignum/bignum');
-const { log, logError } = require('./src/logger');
-const { operations } = require('./src/operations/operations');
+const { generateKeys, encrypt, decrypt } = require("./src/crypto");
+const { readFile, writeFile } = require("./src/helpers");
 
-(async () => {
-  try {
-    const firstNumber = await generatePrimeNumber(64);
-    const secondNumber = await generatePrimeNumber(64);
+const data = readFile('./input.txt');
 
-    log(`First prime number: ${firstNumber}`);
-    log(`Second prime number: ${secondNumber}`);
-    log('Operations examples:');
-    operations.sum(firstNumber, secondNumber);
-    operations.pow2(firstNumber);
+const { publicKey, privateKey } = generateKeys(1024);
+const encrypted = encrypt(data, publicKey);
+const decrypted = decrypt(encrypted, privateKey);
 
-    operations.mod(secondNumber, 27);
-    operations.mult(firstNumber, 9);
-  } catch (err) {
-    logError(err);
-  }
-})();
+writeFile('output.txt', `Data from input.txt file is '${data}'
+encrypted data is '${encrypted.toString('utf-8')}'
+decrypted data is '${decrypted}'
+data is${data === decrypted ? '' : 'not'} equal to decrypted`)
