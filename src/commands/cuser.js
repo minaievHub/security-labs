@@ -6,7 +6,7 @@ const {
 } = require('../secure/access');
 const { onlyInf, createDisk, changeRightsObj } = require('../helpers');
 const { save } = require('../secure/secure');
-const { log } = require('../logger');
+const { log, logAction } = require('../logger');
 
 const newUser = (oldUsers, newUserInf) => {
   let find = false;
@@ -27,7 +27,10 @@ const newUser = (oldUsers, newUserInf) => {
 };
 
 module.exports = async (state, params) => {
-  if (state.user !== 'admin') throw new Error('Permission denied');
+  if (state.user !== 'admin') {
+    logAction(state.user, `cuser ${params}`, 'Permission denied');
+    throw new Error('Permission denied');
+  }
   if (params.length !== 0) throw new Error('Incorrect params length');
 
   let done = false;
@@ -65,6 +68,7 @@ module.exports = async (state, params) => {
     );
     state.disk.rights = changeRightsObj(state.disk.rights, newUserInf.login, true, true, false);
     save(state.disk);
+    logAction(state.user, `cuser ${params}`);
     return;
   }
   clearTimeout(timerId);

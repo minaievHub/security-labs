@@ -14,7 +14,7 @@ const verifyUser = (allUsers, userData) => {
 const LOGIN_TIME = 1000 * 60 * 2;
 const LOGIN_ATTEMPTS = 3;
 const USERS_LENGTH = 9;
-const TIME_VALID = 1000 * 60 * 60 * 24 * 7;
+const TIME_VALID = 1 * 60 * 60 * 24 * 7;
 const ADMIN_PASSWORD_LENGTH = 8;
 const USER_PASSWORD_LENGTH = 8;
 
