@@ -2,45 +2,16 @@
 
 const crypto = require('crypto');
 
-const generateKeyPair = () => crypto.generateKeyPairSync('rsa', {
+const data = 'lab6';
+
+const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
   modulusLength: 2048,
-  publicKeyEncoding: {
-    type: 'spki',
-    format: 'pem'
-  },
-  privateKeyEncoding: {
-    type: 'pkcs8',
-    format: 'pem',
-    cipher: 'aes-256-cbc',
-    passphrase: ''
-  }
 });
 
-const encrypt = (data, publicKey) => {
-  const encrypted = crypto.publicEncrypt(publicKey, Buffer.from(data));
-  return encrypted.toString('base64');
-};
+const signature = (data, privateKey) => crypto.sign('SHA256', Buffer.from(data), privateKey);
 
-const decrypt = (ciphertext, privateKey) => {
-  const decrypted = crypto.privateDecrypt(
-    {
-      key: privateKey,
-      passphrase: '',
-    },
-    Buffer.from(ciphertext, 'base64')
-  );
-  return decrypted.toString('utf8');
-}
+const isVerified = (data, publicKey, signature) => crypto.verify('SHA256', Buffer.from(data), publicKey, signature);
 
-(async () => {
-  const data = 'Checking correctness';
-  const keyPair = generateKeyPair();
-  const encrypted = encrypt(data, keyPair.publicKey);
-  const decrypted = decrypt(encrypted, keyPair.privateKey);
-  console.log('Data: ', data);
-  console.log('Encrypted: ', encrypted);
-  console.log('Decrypted: ', decrypted);
-})();
+const sign = signature(data, privateKey);
 
-
-
+console.log(`Is signature verified: ${isVerified(data, publicKey, sign)}`);
