@@ -1,13 +1,46 @@
-const { generateKeys, encrypt, decrypt } = require("./src/crypto");
-const { readFile, writeFile } = require("./src/helpers");
+'use strict';
 
-const data = readFile('./input.txt');
+const crypto = require('crypto');
 
-const { publicKey, privateKey } = generateKeys(1024);
-const encrypted = encrypt(data, publicKey);
-const decrypted = decrypt(encrypted, privateKey);
+const generateKeyPair = () => crypto.generateKeyPairSync('rsa', {
+  modulusLength: 2048,
+  publicKeyEncoding: {
+    type: 'spki',
+    format: 'pem'
+  },
+  privateKeyEncoding: {
+    type: 'pkcs8',
+    format: 'pem',
+    cipher: 'aes-256-cbc',
+    passphrase: ''
+  }
+});
 
-writeFile('output.txt', `Data from input.txt file is '${data}'
-encrypted data is '${encrypted.toString('utf-8')}'
-decrypted data is '${decrypted}'
-data is${data === decrypted ? '' : 'not'} equal to decrypted`)
+const encrypt = (data, publicKey) => {
+  const encrypted = crypto.publicEncrypt(publicKey, Buffer.from(data));
+  return encrypted.toString('base64');
+};
+
+const decrypt = (ciphertext, privateKey) => {
+  const decrypted = crypto.privateDecrypt(
+    {
+      key: privateKey,
+      passphrase: '',
+    },
+    Buffer.from(ciphertext, 'base64')
+  );
+  return decrypted.toString('utf8');
+}
+
+(async () => {
+  const data = 'Checking correctness';
+  const keyPair = generateKeyPair();
+  const encrypted = encrypt(data, keyPair.publicKey);
+  const decrypted = decrypt(encrypted, keyPair.privateKey);
+  console.log('Data: ', data);
+  console.log('Encrypted: ', encrypted);
+  console.log('Decrypted: ', decrypted);
+})();
+
+
+
